@@ -1,16 +1,38 @@
 import json
-import random
 import logging
 import re
+import pymongo
+from bson.objectid import ObjectId
+
+
+client = pymongo.MongoClient("mongodb+srv://admin:<password>@dell-orders.qk20r.mongodb.net/dell-orders?retryWrites=true&w=majority")
+
+db = client['dell_orders']
+order_status = db.get_collection('order_status')
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 
-def validate(orderId):
-    if len(orderId) < 5:
-        return False
-    return True
+def checkOrderId(orderId):
+    order = order_status.find_one({"_id": ObjectId(orderId)})
+
+    if order is not None:
+        return order['message']
+    
+    return "Order ID is incorrect"
+
+def updateEmail(orderId, email):
+    orderId = ObjectId(orderId)
+    myquery = {"_id": orderId}
+    newvalues = { "$set": { "email": email,"status": "success", "message": "Order processed" } }
+    order_status.update_one(myquery, newvalues)
+
+def updateZipCode(orderId, zipCode):
+    orderId = ObjectId(orderId)
+    myquery = {"_id": orderId}
+    newvalues = { "$set": { "zipCode": zipCode,"status": "success", "message": "Order processed" } }
+    order_status.update_one(myquery, newvalues)
 
 
 def close(message):
@@ -26,9 +48,8 @@ def close(message):
     }
 
 
-def checkDb(orderId):
-    return 3
-    
+
+
 
 
 def elicit_slots(intent_name, slots, slot_to_elicit, message):
@@ -46,8 +67,9 @@ def elicit_slots(intent_name, slots, slot_to_elicit, message):
     }
 
 
-def elicit_intent(message):
+def elicit_intent(session_attributes, message):
     return {
+        'sessionAttributes': session_attributes,
         "dialogAction": {
             "type": "ElicitIntent",
             "message": {
@@ -81,7 +103,11 @@ def order_id(intent_request):
     slots = intent_request['currentIntent']['slots']
     orderId = slots['orderId']
     print(orderId)
-    if not validate(orderId):
+    message = checkOrderId(orderId)
+    session_attributes = {
+        'orderId': orderId
+    }
+    if "incorrect" in message:
         return elicit_slots(
             intent_name=intent_request['currentIntent']['name'],
             slots=slots,
@@ -89,13 +115,15 @@ def order_id(intent_request):
             message='Enter proper order id'
         )
     else:
-        error = checkDb(orderId)
-        if error == 1:
+        error = message
+        if "Email" in error:
             return elicit_intent(
+                session_attributes=session_attributes,
                 message='Enter email address'
             )
-        elif error == 2:
+        elif "zip" in error:
             return elicit_intent(
+                session_attributes=session_attributes,
                 message='Enter zip code'
             )
         else:
@@ -103,6 +131,7 @@ def order_id(intent_request):
 
 def addCorrectEmailToDB(intent_request):
     slots = intent_request['currentIntent']['slots']
+    orderId = intent_request['sessionAttributes']['orderId']
     email = slots['email']
     print(email)
 
@@ -113,12 +142,15 @@ def addCorrectEmailToDB(intent_request):
             slot_to_elicit='orderId',
             message='Enter proper email id'
         )
+    
+    updateEmail(orderId, email)
     return close("Order successfully processed")
 
 
 
 def addCorrectZipToDB(intent_request):
     slots = intent_request['currentIntent']['slots']
+    orderId = intent_request['sessionAttributes']['orderId']
     zipCode = slots['zipCode']
     print(zipCode)
 
@@ -129,6 +161,8 @@ def addCorrectZipToDB(intent_request):
             slot_to_elicit='orderId',
             message='Enter proper zip code'
         )
+    
+    updateZipCode(orderId, zipCode)
     return close("Order successfully processed")
 
 
