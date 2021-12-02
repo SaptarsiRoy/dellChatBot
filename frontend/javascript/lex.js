@@ -1,6 +1,7 @@
 // set the focus to the input box
 document.getElementById("wisdom").focus();
-
+// var userPoolId = "us-east-1_WrHisjBZC";
+// var appId = "dcvqqd7llnu9fn73refotui8v";
 // Initialize the Amazon Cognito credentials provider
 AWS.config.region = 'us-east-1'; // Region
 AWS.config.credentials = new AWS.CognitoIdentityCredentials({
@@ -10,10 +11,12 @@ AWS.config.credentials = new AWS.CognitoIdentityCredentials({
 
 var lexruntime = new AWS.LexRuntime();
 var lexUserId = 'chatbot-demo' + Date.now();
-var sessionAttributes = {};
+var sessionAttributes = {
+    'userType': 'public'
+};
 
 function pushChat() {
-
+    console.log(sessionAttributes);
     // if there is text to be sent...
     var wisdomText = document.getElementById('wisdom');
     if (wisdomText && wisdomText.value && wisdomText.value.trim().length > 0) {
@@ -85,10 +88,11 @@ function showResponse(lexResponse) {
         responsePara.appendChild(document.createTextNode(
             'Ready for fulfillment'));
         // TODO:  show slot values
-    } else {
-        responsePara.appendChild(document.createTextNode(
-            '(' + lexResponse.dialogState + ')'));
-    }
+    } 
+    // else {
+    //     responsePara.appendChild(document.createTextNode(
+    //         '(' + lexResponse.dialogState + ')'));
+    // }
     conversationDiv.appendChild(responsePara);
     conversationDiv.scrollTop = conversationDiv.scrollHeight;
 }
