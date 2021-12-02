@@ -12,7 +12,7 @@ AWS.config.credentials = new AWS.CognitoIdentityCredentials({
 var lexruntime = new AWS.LexRuntime();
 var lexUserId = 'chatbot-demo' + Date.now();
 var sessionAttributes = {
-    'userType': 'public'
+    'userType': 'admin'
 };
 
 function pushChat() {
