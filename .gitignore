@@ -1,0 +1,16 @@
+# Vscode settings
+.vscode/settings.json
+
+# Backend testing files
+backend/nodejs_lambda/
+backend/database.ipynb
+backend/database.py
+backend/nodejs_lambda.zip
+
+# Jupyter notebook checkpoints
+backend/.ipynb_checkpoints/database-checkpoint.ipynb
+
+
+# Frontend testing files
+frontend/cognito.html
+frontend/lex.html
