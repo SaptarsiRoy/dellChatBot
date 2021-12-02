@@ -312,9 +312,5 @@ exports.handler = async (event, context) => {
   const db = await connectToDatabase();
   // Make a MongoDB MQL Query to go into the movies collection and return the first 20 movies.
   let res = await dispatch(db, event);
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify(res),
-  };
-  return response;
+  return res;
 };
