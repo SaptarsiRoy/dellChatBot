@@ -6,7 +6,7 @@ This file contains lambda function code for integration
 const {ObjectId, MongoClient} = require("mongodb");
 // Define our connection string. Info on where to get this will be described below. In a real world application you'd want to get this string from a key vault like AWS Key Management, but for brevity, we'll hardcode it in our serverless function here.
 const MONGODB_URI =
-  "mongodb+srv://admin:saptarsi22@dell-orders.qk20r.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+  "mongodb+srv://admin:<password>@dell-orders.qk20r.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 // Once we connect to the database once, we'll store that connection and reuse it so that we don't have to connect to the database on every request.
 let cachedDb = null;
 async function connectToDatabase() {
@@ -23,7 +23,7 @@ async function connectToDatabase() {
 
 //shows the order patterns to admin for a given day
 async function showOrderPatternsDay(db, intent_request) {
-    let queryDate = new Date(intent_request['currentIntent']['date']);
+    let queryDate = new Date(intent_request['currentIntent']['slots']['date']);
     let nextDate = new Date(queryDate.getFullYear(), queryDate.getMonth(), queryDate.getDate() + 1);
     
     //queries the number of successfull orders on a particular date
@@ -50,12 +50,14 @@ async function showOrderPatternsDay(db, intent_request) {
         "status": "zip code error"
     }).count();
 
-    return patterns({
-        successfullOrders,
-        holdOrders,
-        incorrectEmailOrders,
-        incorrectZipOrders
-    });
+    let totalOrders = holdOrders + successfullOrders;
+
+    let message =   "Total orders = " + totalOrders + " \nSuccessfull orders = " + successfullOrders + " \non hold orders = "  + holdOrders + " \nemail errors = " + incorrectEmailOrders + " \nzip code errors = " + incorrectZipOrders;
+    
+    
+    
+    //returns a json showing the patterns for admin
+    return close(message);
     
 }
 
@@ -89,12 +91,11 @@ async function showOrderPatternsMonth(db, intent_request) {
         "status": "zip code error"
     }).count();
 
-    return patterns({
-        successfullOrders,
-        holdOrders,
-        incorrectEmailOrders,
-        incorrectZipOrders
-    });
+    let totalOrders = holdOrders + successfullOrders;
+
+    let message =   "Total orders = " + totalOrders + " \nSuccessfull orders = " + successfullOrders + " \non hold orders = "  + holdOrders + " \nemail errors = " + incorrectEmailOrders + " \nzip code errors = " + incorrectZipOrders;
+
+    return close();
     
 }
 
@@ -129,18 +130,7 @@ async function updateZipCode(db, orderId, zipCode) {
   });
 }
 
-//returns a json showing the patterns for admin
-function patterns(message) {
-     return {
-        "dialogAction": {
-            "type": "Patterns",
-            "message": {
-                "contentType": "PlainText",
-                "content": message
-            },
-        }
-    };
-}
+
 
 //returns a json when request is fullfiled
 function close(message)  {
@@ -290,9 +280,14 @@ async function dispatch(db, intent_request) {
     let intent_name = intent_request['currentIntent']['name'];
     let userType = intent_request['sessionAttributes']['userType'];
 
-    if(intent_name === 'AdminIntent' && userType === 'admin') {
-        return await showOrderPatternsDay(db, intent_request);
+    if (userType === 'admin') {
+        if(intent_name === 'AdminIntent') {
+            return await showOrderPatternsDay(db, intent_request);
+        }
+    } else {
+        return close('You must be admin to perform the action');
     }
+    
     if (intent_name === 'orderstatus') {
         return await order_id(db, intent_request);
     }
@@ -306,11 +301,14 @@ async function dispatch(db, intent_request) {
 
 //lambda function handler
 exports.handler = async (event, context) => {
+
+    console.log(event);
   /* By default, the callback waits until the runtime event loop is empty before freezing the process and returning the results to the caller. Setting this property to false requests that AWS Lambda freeze the process soon after the callback is invoked, even if there are events in the event loop. AWS Lambda will freeze the process, any state data, and the events in the event loop. Any remaining events in the event loop are processed when the Lambda function is next invoked, if AWS Lambda chooses to use the frozen process. */
   context.callbackWaitsForEmptyEventLoop = false;
   // Get an instance of our database
   const db = await connectToDatabase();
   // Make a MongoDB MQL Query to go into the movies collection and return the first 20 movies.
   let res = await dispatch(db, event);
+  console.log(res);
   return res;
 };
