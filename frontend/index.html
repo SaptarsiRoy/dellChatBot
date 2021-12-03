@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Bootstrap CSS and Script -->
     <link
@@ -18,26 +18,39 @@
       crossorigin="anonymous"
     ></script>
 
+    <!-- AWS scripts -->
+    <script src="javascript/script/jquery.min.js"></script>
+    <script src="javascript/script/aws-sdk-2.487.0.min.js"></script>
+    <script src="javascript/script/aws-cognito-sdk.min.js"></script>
+    <script src="javascript/script/amazon-cognito-identity.min.js"></script>
+
     <!-- My CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css" />
 
     <!-- AWS sdk -->
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1037.0.min.js"></script>
 
-
-
-    <title>Dell Chat Bot</title>
-</head><!--button class="button button1" ><link rel="html" href="index2.html">Admin</button-->
-<a href="signin/index2.html" target="_self">Admin</a></br></br></br></br>
-<body>
-    <h2 style="font-family: georgia;"><b> Welcome to Dell Chat Bot</b></h2>
+    <title>Dell Chat Bot</title></head
+  ><!--button class="button button1" ><link rel="html" href="index2.html">Admin</button-->
+  <body>
+    <h2 style="font-family: georgia"><b> Welcome to Dell Chat Bot</b></h2>
     <!--button class="button button1">Admin</button-->
     <div id="conversation"></div>
     <form id="chatform" style="margin-top: 10px" onsubmit="return pushChat();">
-      <input type="text" id="wisdom" size="80" value="" placeholder="Hello! How can I help you?">
+      <input
+        type="text"
+        id="wisdom"
+        size="80"
+        value=""
+        placeholder="Hello! How can I help you?"
+      />
     </form>
 
+    <br /><br />
+    <button id="admin-button" class="btn btn-success" onclick="logIn()">
+      Admin
+    </button>
     <!-- My js file -->
     <script src="javascript/lex.js"></script>
-</body>
+  </body>
 </html>
